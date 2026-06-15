@@ -1,5 +1,6 @@
 "use client";
 
+import type { Channel } from "@/lib/playlist";
 import Hls from "hls.js";
 import {
   BadgeCheck,
@@ -17,10 +18,9 @@ import {
   Star,
   Tv,
   Volume2,
-  X
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Channel } from "@/lib/playlist";
 
 type TvExperienceProps = {
   channels: Channel[];
@@ -30,7 +30,7 @@ const MAX_RECENTS = 12;
 
 const storage = {
   favorites: "livetv:favorites",
-  recents: "livetv:recents"
+  recents: "livetv:recents",
 };
 
 function readList(key: string) {
@@ -73,7 +73,7 @@ function accentIndex(value: string) {
 function nowLabel() {
   return new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
-    minute: "2-digit"
+    minute: "2-digit",
   }).format(new Date());
 }
 
@@ -93,20 +93,24 @@ export function TvExperience({ channels }: TvExperienceProps) {
   const chromeTimerRef = useRef<number | undefined>(undefined);
 
   const activeChannel = useMemo(
-    () => channels.find((channel) => channel.id === activeChannelId) ?? channels[0],
-    [activeChannelId, channels]
+    () =>
+      channels.find((channel) => channel.id === activeChannelId) ?? channels[0],
+    [activeChannelId, channels],
   );
 
   const groups = useMemo(() => {
-    const counts = channels.reduce<Record<string, number>>((result, channel) => {
-      result[channel.group] = (result[channel.group] ?? 0) + 1;
-      return result;
-    }, {});
+    const counts = channels.reduce<Record<string, number>>(
+      (result, channel) => {
+        result[channel.group] = (result[channel.group] ?? 0) + 1;
+        return result;
+      },
+      {},
+    );
 
     return [
       ["All", channels.length] as const,
       ["Favorites", favorites.length] as const,
-      ...Object.entries(counts).sort((first, second) => second[1] - first[1])
+      ...Object.entries(counts).sort((first, second) => second[1] - first[1]),
     ];
   }, [channels, favorites.length]);
 
@@ -115,7 +119,7 @@ export function TvExperience({ channels }: TvExperienceProps) {
       recents
         .map((id) => channels.find((channel) => channel.id === id))
         .filter((channel): channel is Channel => Boolean(channel)),
-    [channels, recents]
+    [channels, recents],
   );
 
   const filteredChannels = useMemo(() => {
@@ -183,7 +187,7 @@ export function TvExperience({ channels }: TvExperienceProps) {
       const hls = new Hls({
         lowLatencyMode: true,
         backBufferLength: 60,
-        enableWorker: true
+        enableWorker: true,
       });
 
       hlsRef.current = hls;
@@ -194,7 +198,9 @@ export function TvExperience({ channels }: TvExperienceProps) {
       });
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
-          setPlayError("This stream did not respond in the browser. Try another channel.");
+          setPlayError(
+            "This stream did not respond in the browser. Try another channel.",
+          );
         }
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -205,10 +211,10 @@ export function TvExperience({ channels }: TvExperienceProps) {
     }
 
     setRecents((current) => {
-      const next = [activeChannel.id, ...current.filter((id) => id !== activeChannel.id)].slice(
-        0,
-        MAX_RECENTS
-      );
+      const next = [
+        activeChannel.id,
+        ...current.filter((id) => id !== activeChannel.id),
+      ].slice(0, MAX_RECENTS);
       writeList(storage.recents, next);
       return next;
     });
@@ -280,7 +286,7 @@ export function TvExperience({ channels }: TvExperienceProps) {
             <span className="brand-mark">
               <Tv size={22} aria-hidden="true" />
             </span>
-            <span>LiveTV</span>
+            <span>FIFA Prime TV</span>
           </div>
           <div className="topbar-meta">
             <span>{clock}</span>
@@ -291,7 +297,9 @@ export function TvExperience({ channels }: TvExperienceProps) {
         <div className="player-grid">
           <div
             className={
-              showPlayerChrome || playError ? "player-shell is-chrome-visible" : "player-shell"
+              showPlayerChrome || playError
+                ? "player-shell is-chrome-visible"
+                : "player-shell"
             }
             onClick={revealPlayerChrome}
             onFocusCapture={revealPlayerChrome}
@@ -322,7 +330,11 @@ export function TvExperience({ channels }: TvExperienceProps) {
               <div className="player-actions">
                 <button
                   type="button"
-                  className={favoriteSet.has(activeChannel.id) ? "icon-button is-active" : "icon-button"}
+                  className={
+                    favoriteSet.has(activeChannel.id)
+                      ? "icon-button is-active"
+                      : "icon-button"
+                  }
                   onClick={() => toggleFavorite(activeChannel.id)}
                   aria-label="Toggle favorite"
                   title="Favorite"
@@ -352,7 +364,9 @@ export function TvExperience({ channels }: TvExperienceProps) {
           </div>
 
           <aside className="now-panel" aria-label="Current channel details">
-            <div className={`channel-mark accent-${accentIndex(activeChannel.name)}`}>
+            <div
+              className={`channel-mark accent-${accentIndex(activeChannel.name)}`}
+            >
               {activeChannel.logo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={activeChannel.logo} alt="" />
@@ -394,7 +408,12 @@ export function TvExperience({ channels }: TvExperienceProps) {
               aria-label="Search channels"
             />
             {query ? (
-              <button type="button" onClick={() => setQuery("")} aria-label="Clear search" title="Clear">
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                title="Clear"
+              >
                 <X size={16} aria-hidden="true" />
               </button>
             ) : null}
@@ -445,10 +464,16 @@ export function TvExperience({ channels }: TvExperienceProps) {
                 <button
                   key={channel.id}
                   type="button"
-                  className={channel.id === activeChannel.id ? "mini-channel selected" : "mini-channel"}
+                  className={
+                    channel.id === activeChannel.id
+                      ? "mini-channel selected"
+                      : "mini-channel"
+                  }
                   onClick={() => selectChannel(channel)}
                 >
-                  <span className={`mini-mark accent-${accentIndex(channel.name)}`}>
+                  <span
+                    className={`mini-mark accent-${accentIndex(channel.name)}`}
+                  >
                     {channelInitials(channel.name)}
                   </span>
                   <span>{channel.name}</span>
@@ -463,10 +488,20 @@ export function TvExperience({ channels }: TvExperienceProps) {
             {filteredChannels.map((channel) => (
               <article
                 key={channel.id}
-                className={channel.id === activeChannel.id ? "channel-card selected" : "channel-card"}
+                className={
+                  channel.id === activeChannel.id
+                    ? "channel-card selected"
+                    : "channel-card"
+                }
               >
-                <button type="button" className="channel-main" onClick={() => selectChannel(channel)}>
-                  <span className={`channel-mark small accent-${accentIndex(channel.name)}`}>
+                <button
+                  type="button"
+                  className="channel-main"
+                  onClick={() => selectChannel(channel)}
+                >
+                  <span
+                    className={`channel-mark small accent-${accentIndex(channel.name)}`}
+                  >
                     {channel.logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={channel.logo} alt="" />
@@ -486,7 +521,11 @@ export function TvExperience({ channels }: TvExperienceProps) {
                 </button>
                 <button
                   type="button"
-                  className={favoriteSet.has(channel.id) ? "favorite-button active" : "favorite-button"}
+                  className={
+                    favoriteSet.has(channel.id)
+                      ? "favorite-button active"
+                      : "favorite-button"
+                  }
                   onClick={() => toggleFavorite(channel.id)}
                   aria-label={`Favorite ${channel.name}`}
                   title="Favorite"
@@ -502,11 +541,19 @@ export function TvExperience({ channels }: TvExperienceProps) {
               <button
                 key={channel.id}
                 type="button"
-                className={channel.id === activeChannel.id ? "guide-row selected" : "guide-row"}
+                className={
+                  channel.id === activeChannel.id
+                    ? "guide-row selected"
+                    : "guide-row"
+                }
                 onClick={() => selectChannel(channel)}
               >
-                <span className="guide-number">{channel.number.toString().padStart(3, "0")}</span>
-                <span className={`mini-mark accent-${accentIndex(channel.name)}`}>
+                <span className="guide-number">
+                  {channel.number.toString().padStart(3, "0")}
+                </span>
+                <span
+                  className={`mini-mark accent-${accentIndex(channel.name)}`}
+                >
                   {channelInitials(channel.name)}
                 </span>
                 <span className="guide-name">{channel.name}</span>

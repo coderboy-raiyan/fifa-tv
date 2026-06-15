@@ -13,7 +13,7 @@ export type Channel = {
   host: string;
 };
 
-const PLAYLIST_FILE = "Fifa world cup.m3u";
+const PLAYLIST_FILE = "120+ FIFA LIVE.m3u";
 
 const countryNames: Record<string, string> = {
   "🇦🇱": "Albania",
@@ -44,7 +44,7 @@ const countryNames: Record<string, string> = {
   "🇸🇦": "Saudi Arabia",
   "🇹🇲": "Turkmenistan",
   "🇹🇷": "Turkey",
-  "🇺🇦": "Ukraine"
+  "🇺🇦": "Ukraine",
 };
 
 const groupPatterns: Array<[RegExp, string]> = [
@@ -58,7 +58,7 @@ const groupPatterns: Array<[RegExp, string]> = [
   [/DAZN/i, "DAZN"],
   [/SKY|Sky/i, "Sky"],
   [/Матч|Setanta|OTT|🇷🇺/i, "Eastern Europe"],
-  [/SPORT|Sports|Sport|Deportes|Futbol|Football|Golf|Liga|LALIGA/i, "Sports"]
+  [/SPORT|Sports|Sport|Deportes|Futbol|Football|Golf|Liga|LALIGA/i, "Sports"],
 ];
 
 function parseAttributes(value: string) {
@@ -155,7 +155,8 @@ export async function getPlaylist(): Promise<Channel[]> {
 
     const metadata = currentInfo.replace(/^#EXTINF:-?\d+\s*/i, "");
     const attributes = parseAttributes(metadata);
-    const [, fallbackName = "Untitled channel"] = metadata.match(/,(.*)$/) ?? [];
+    const [, fallbackName = "Untitled channel"] =
+      metadata.match(/,(.*)$/) ?? [];
     const name = cleanName(attributes["tvg-name"] || fallbackName);
     const group = inferGroup(name, attributes["group-title"]);
     const url = line;
@@ -170,7 +171,7 @@ export async function getPlaylist(): Promise<Channel[]> {
       country: inferCountry(name),
       quality: inferQuality(name, url),
       logo: attributes["tvg-logo"],
-      host: parsedUrl.hostname.replace(/^www\./, "")
+      host: parsedUrl.hostname.replace(/^www\./, ""),
     });
 
     currentInfo = undefined;

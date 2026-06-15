@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LiveTV",
+  title: "FIFA Prime - RaiyanHQ",
   description: "A local-first live TV player powered by your M3U playlist",
 };
 
